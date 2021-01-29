@@ -1,0 +1,13 @@
+Type: ~Car,Platenumber: ~AAA555,Intime: ~2021-01-29 20:49:01,Position: ~1
+Type: ~Mc,Platenumber: ~BBB222,Intime: ~2021-01-29 13:03:55,Position: ~2
+Type: ~Mc,Platenumber: ~BBB333,Intime: ~2021-01-29 13:03:58,Position: ~2
+Type: ~Mc,Platenumber: ~BBB333,Intime: ~2021-01-28 13:03:58,Position: ~7
+Type: ~Car,Platenumber: ~XYX878,Intime: ~2021-01-29 21:00:07,Position: ~17
+Type: ~Car,Platenumber: ~AAA666,Intime: ~2021-01-29 20:49:39,Position: ~18
+Type: ~Car,Platenumber: ~XXX555,Intime: ~2021-01-29 21:00:07,Position: ~23
+Type: ~Car,Platenumber: ~CCC111,Intime: ~2021-01-29 20:49:39,Position: ~25
+Type: ~Car,Platenumber: ~UUU999,Intime: ~2021-01-27 20:49:39,Position: ~27
+Type: ~Car,Platenumber: ~PPP444,Intime: ~2021-01-29 16:22:48,Position: ~30
+Type: ~Mc,Platenumber: ~CCC321,Intime: ~2021-01-24 16:22:48,Position: ~45
+Type: ~Mc,Platenumber: ~AAA666,Intime: ~2021-01-29 20:49:39,Position: ~50
+Type: ~Car,Platenumber: ~AAA111,Intime: ~2021-01-29 16:22:48,Position: ~74
