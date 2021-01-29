@@ -17,7 +17,7 @@ namespace Prag_Parking2._0
         public Car(string platenumber, string type, string intime) //Re-create car for list
         {
             Identifier = platenumber;
-            Size = 2;
+            Size = 4;
             Type = type;
             VechicleInTime = Convert.ToDateTime(intime);
         }
