@@ -5,63 +5,87 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Configuration;
 
 namespace Prag_Parking2._0
 {
     class Program
     {
-        //real
+        //Prag parking 2.0
+        //Jag har lämnat kommentarer i koden på hur saker fungerar. En större summering av projektet och kursen och kommer vid inlämning
+        //Dessa kommentarer är mitt försök att förklara simpelt vad som händer där de behövs.
+
+
+
+
         static void Main(string[] args)
         {
-            int GarageSize = 100;
-            int ChargeCar = 20;
-            int ChargeMc = 10;
-            const int CarSize = 4;
-            const int McSize = 2;
-            string Platenumber;
+            //function för att kontrollera config
+            if (ConfigParseCheck() == false)
+            {
+                Console.WriteLine("something seems to be wrong with you config. make sure you use numbers");
+                Console.ReadKey();
+            }
 
-            double FreeOfChargeTime = 10;
-
+            var GarageSize = int.Parse(ConfigurationManager.AppSettings["GARAGEsize"]);
             List<Parkingspots> Garage = new List<Parkingspots>(); //Skapar listan som används för Garaget
-            for (int i = 1; i < GarageSize + 1; i++)    //Fyller den med tomma platser
+            for (int i = 1; i < GarageSize + 1; i++)    //Fyller den med tomma platser baserat på hur stort garage du vill ha. Ändra i config
             {
                 var spot = new Parkingspots(i);
                 Garage.Add(spot);
 
             }
-            Garage = LoadFromFile(Garage); //Laddar från text fil
+            Garage = LoadFromFile(Garage); //Laddar sparade fordon
             
 
 
-            while (true)
+            while (true) //Körningen av application
             {
-                WriteToFile(Garage);
+                WriteToFile(Garage); //I början sparas alla ändringar som gjorts till sjävla listan som är garaget
 
-                Console.Clear();
+                if (ConfigParseCheck() == false) //Självförklarande
+                {
+                    Console.WriteLine("something seems to be wrong with you config. make sure you use numbers");
+                    Console.ReadKey();
+                }
+
+                //Eftersom variablerna har kontrollerats kan vi parsa dom. Felmeddelande kommer om upp ändringen orsaka fel.
+                var Parkingsize = int.Parse(ConfigurationManager.AppSettings["Parkingsize"]);
+                var ChargeCar = int.Parse(ConfigurationManager.AppSettings["PricePerHourCAR"]);
+                var ChargeMC = int.Parse(ConfigurationManager.AppSettings["PricePerHourMC"]);
+                var CarSize = int.Parse(ConfigurationManager.AppSettings["CARsize"]);
+                var McSize = int.Parse(ConfigurationManager.AppSettings["MCsize"]);
+                var FreeParkingTimeMinutes = int.Parse(ConfigurationManager.AppSettings["FreeParkingTimeMinutes"]);
+
+                string Platenumber;
                 int freeslots = NumberOfFreeSlots(Garage, CarSize);
 
+                Console.Clear();
 
-                Console.WriteLine( "Total number of spots: {0} \t\t/Prag Parking Appclication/" +
-                                 "\nHourly Charge: {1}$",GarageSize, ChargeCar);
+                Console.WriteLine( "Total number of spots: {0} \t\t//Prag Parking Application//" +
+                                 "\nHourly Charge cars: {1}$",GarageSize, ChargeCar);
 
                 Console.WriteLine("\n" +
                     "Press 1 to Park Car\n" +
                     "Press 2 to Park MC\n" +
                     "Press 3 to Remove a Vehicle\n" +
                     "Press 4 to Move\n\n" +
-                    "Press 5 to Check if platenumber is in Garage\n\n\n");
+                    "Press 6 to change Settings\n\n\n");
 
 
-                FreeSpotsWrite(Garage, CarSize, McSize); //Vill jag att adet ska skriva ut index också? Mer jobb. ändra lite för bara 100rutor
+                FreeSpotsWrite(Garage, CarSize, McSize); //Kartan 
+                Console.WriteLine();
 
+                Console.Write("Press number and press enter :");
                 string selection = Console.ReadLine();
+
                 switch (selection)
                 {
                     case "1": //Park Car
                         Console.Clear();
                         Console.WriteLine("Enter Platenumber for the Car to park.\n ");
                         Platenumber = Console.ReadLine();
-                        IVehicle car = new Car(Platenumber);
+                        IVehicle car = new Car(Platenumber); //Använder Ivehicle för att det ska vara lättare att lägga till i den nestade listan.
 
                         var spotForCar = IsGarageFull(Garage, car);
                         if (spotForCar != null)
@@ -73,12 +97,10 @@ namespace Prag_Parking2._0
                         else
                         {
                             Console.Clear();
-
                             Console.WriteLine("Sry the Garage is Full.. Press any to continue");
                             Console.ReadLine();
                             break;
                         }
-                        // Update list so it saves WriteToTheFile(Garage);
                         break;
                     case "2": //Park Mc
                         Console.Clear();
@@ -96,12 +118,12 @@ namespace Prag_Parking2._0
                         else
                         {
                             Console.Clear();
-                            Thread.Sleep(500);
+
                             Console.WriteLine("Sry the Garage is Full");
+                            Thread.Sleep(2000);
                         }
-                        // Update list so it saves ... WriteToTheFile(Garage);
                         break;
-                    case "3": //Remove Vehicle
+                    case "3": //Remove/checkout Vehicle
                         Console.Clear();
                         Console.WriteLine("Enter Platenumber to remove..\n");
 
@@ -115,17 +137,17 @@ namespace Prag_Parking2._0
                             {
                                 DateTime currentTime = DateTime.UtcNow;
                                 TimeSpan duration = currentTime.Subtract(vehicleToRemove.VechicleInTime);
-                                var totaltimeinhours = (((duration.TotalMinutes) - FreeOfChargeTime) / 60);
+                                var totaltimeinhours = (((duration.TotalMinutes) - FreeParkingTimeMinutes) / 60);
 
                                 if (vehicleToRemove is Car)
                                 {
                                     Console.WriteLine("\n| Drive Car: {0} from #{1} to the customer|\n", Platenumber, spot.GetId());
-                                    Console.WriteLine("|The Fee is ${0}|", (double)totaltimeinhours * ChargeCar);
+                                    Console.WriteLine("|The Fee is ${0}|", ((double)totaltimeinhours * ChargeCar).ToString("0.00"));
                                 }
                                 if (vehicleToRemove is Mc)
                                 {
                                     Console.WriteLine("\n| Drive Mc: {0} from #{1} to the customer |\n", Platenumber, spot.GetId());
-                                    Console.WriteLine("|The Fee is ${0}", (double)totaltimeinhours * ChargeMc);
+                                    Console.WriteLine("|The Fee is ${0}", ((double)totaltimeinhours * ChargeMC).ToString("0.00"));
                                 }
 
                                 Console.ReadKey();
@@ -149,19 +171,18 @@ namespace Prag_Parking2._0
                         Platenumber = Console.ReadLine();
 
                         Parkingspots currentspot = SearchVehicle(Garage, Platenumber);
-                        //IVehicle vehicleToMove = currentspot.GetVehicles().FirstOrDefault(x => x.Identifier == Platenumber);
 
                         if (currentspot != null && Platenumber != null)
                         {
-                            IVehicle vehicleToMove = currentspot.GetVehicles().FirstOrDefault(x => x.Identifier == Platenumber);
+                            IVehicle vehicleToMove = currentspot.GetVehicles().FirstOrDefault(x => x.Identifier == Platenumber);  //Kopierar det första forden med det regnummret
                             Console.Clear();
                             Console.WriteLine("Enter number of the new parkingspot: ");
                             string newSpotNumber = Console.ReadLine();
-                            var Spot = Garage.FirstOrDefault(x => x.GetId().ToString() == newSpotNumber);
+                            var Spot = Garage.FirstOrDefault(x => x.GetId().ToString() == newSpotNumber); //hittar Id för nya platsen
 
                             if (Spot != null)
                             {
-                                if (Spot.CanAdd(vehicleToMove.Size))
+                                if (Spot.CanAdd(vehicleToMove.Size)) //kollar om det finns plats 
                                 {
                                     if (vehicleToMove is Car)
                                     {
@@ -194,7 +215,102 @@ namespace Prag_Parking2._0
                         }
                         break;
 
-                            case "5"://Check if 
+                    case "6":
+                        Console.Clear();
+                        Console.WriteLine("What do you want to change?");
+                        Console.WriteLine("1. Change Priceing\t\t Currently: {0} for cars and {6} for MC's\n" +
+                            "2. Change Free Parking time\t Currently: {1}\n" +
+                            "3. How big Car's are\t\t Current Size: {2}\n" +
+                            "4. How big MC's are\t\t Current Size: {3}\n" +
+                            "5. How big Parkingspots are\t Current Size: {4}\n" +
+                            "6. How many Parkingspot is in the Garage.\t Currently: {5}",ChargeCar, FreeParkingTimeMinutes
+                            , CarSize, McSize, Parkingsize, GarageSize, ChargeMC);
+
+
+                        string choice;
+                        choice = Console.ReadLine();
+
+                        string x;
+                        string setting;
+
+                        switch (choice) //Det tog mig sån tid att hitta hur jag skulle göra detta. Var ute på många äventyr för att pricka rätt... Detta tog längst tid av allt i projektet av någon anledning. 
+                                        //Sen kom jag på hur jag skulle göra och det blev lätt hehe.
+                                        //Först var jag inne på att göra likadant som jag gjorde med Garage listan. Att typ variablerna skulle läsas in rad för rad från en textfil.
+                                        //Men det kändes som det skulle finnas ett smidigare sätt och det fanns det med hjälp av 'using System.Configuration' 
+                                        //Skrev min egna enkla funktion. åhh swoosh! de funka! Så glad! -Jonatan
+                        {
+
+                            case "1":
+                                Console.Clear();
+                                Console.WriteLine("1. change hourly rate of cars\n" +
+                                    "2. Change hourly rate of Mc's");
+                                choice = Console.ReadLine();
+                                switch (choice)
+                                {
+                                    case "1":
+                                        Console.WriteLine("How much you wanna charge an hour for Cars?");
+                                         x = Console.ReadLine();
+                                         setting = "PricePerHourCAR"; 
+
+                                        ChangeSetting(setting, x);//
+                                        break;
+                                    case "2":
+                                        Console.WriteLine("How much you wanna charge an hour for MC's?");
+                                         x = Console.ReadLine();
+                                         setting = "PricePerHourMC";
+
+                                        ChangeSetting(setting, x);
+                                        break;
+                                }
+                                break;
+                            case "2":
+                                Console.Clear();
+                                Console.WriteLine("How many min of free parking do you want?");
+                                 x = Console.ReadLine();
+                                 setting = "FreeParkingTimeMinutes";
+
+                                ChangeSetting(setting, x);
+                                break;
+                            case "3":
+                                Console.Clear();
+                                Console.WriteLine("Size of car in program.\t\t #Relates to logic of calculating how many vehicles can fit in one spot");
+                                x = Console.ReadLine();
+                                setting = "CARsize";
+
+                                ChangeSetting(setting, x);
+                                break;
+                            case "4":
+                                Console.Clear();
+                                Console.WriteLine("Size of MC in program.\t\t #Relates to logic of calculating how many vehicles can fit in one spot");
+                                x = Console.ReadLine();
+                                setting = "MCsize";
+
+                                ChangeSetting(setting, x);
+
+                                break;
+                            case "5":
+                                Console.Clear();
+                                Console.WriteLine("Size of Parkingspace in program.\t\t #Relates to logic of calculating how many vehicles can fit in one spot");
+                                x = Console.ReadLine();
+                                setting = "Parkingsize";
+
+                                ChangeSetting(setting, x);
+
+                                break;
+                            case "6":
+                                Console.Clear();
+                                Console.WriteLine("So you are doing a remodeling of the entire garage?!?! Wow! Good! busy times!\n\n" +
+                                    "How many parkingspots will your new garage have?\n" +
+                                    "PS. Make sure no cars are hurt in your remodeling. Dont make the garage(list) smallar than the car parked in the highest index parkingslot.\n\n" +
+                                    "new spots:");
+                                x = Console.ReadLine();
+                                setting = "GARAGEsize";
+
+                                ChangeSetting(setting, x);
+                                break;
+
+                        }
+                        Console.ReadKey();
                         
                         break;
                 }
@@ -206,7 +322,36 @@ namespace Prag_Parking2._0
 
         }
 
-        private static void FreeSpotsWrite(List<Parkingspots> list, int Carsize, int MCsize)
+
+        private static bool ConfigParseCheck() //parsar alla config-värden
+        {
+            var Parkingsize = ConfigurationManager.AppSettings["Parkingsize"];
+            var GarageSize = ConfigurationManager.AppSettings["GARAGEsize"];
+            var ChargeCar = ConfigurationManager.AppSettings["PricePerHourCAR"];
+            var ChargeMC = ConfigurationManager.AppSettings["PricePerHourMC"];
+            var CarSize = ConfigurationManager.AppSettings["CARsize"];
+            var McSize = ConfigurationManager.AppSettings["MCsize"];
+            var FreeParkingTimeMinutes = ConfigurationManager.AppSettings["FreeParkingTimeMinutes"];
+
+            int check = 0;
+
+            if (int.TryParse(Parkingsize, out check) && int.TryParse(FreeParkingTimeMinutes, out check) && int.TryParse(GarageSize, out check) && int.TryParse(ChargeCar, out check) && int.TryParse(ChargeMC, out check) && int.TryParse(CarSize, out check) && int.TryParse(McSize, out check))
+            {
+                return true;
+            }
+            else
+            {
+
+                Console.WriteLine("Something wrong with the configfile. Make sure you use numbers");
+                return false;
+            }
+
+
+
+        }
+
+
+        private static void FreeSpotsWrite(List<Parkingspots> list, int Carsize, int MCsize) //kartan
         {
             int counter = 0;
             foreach (var item in list)
@@ -214,10 +359,10 @@ namespace Prag_Parking2._0
 
                 int id = item.GetId();
                 int availabelspace = item.GetFreeSpace();
-                string extra = "";
-                if (counter <9) //för att få kartan jämn
+                string extra = "";//för att få kartan jämn
+                if (counter <9) 
                 {
-                    extra = "  ";
+                    extra = "  "; 
                 }
                 else if(counter >= 9 && counter < 99)
                 {
@@ -259,26 +404,9 @@ namespace Prag_Parking2._0
                     return spot;
                 }
             }
-            Console.WriteLine("Could not find your Platenumber");
+            Console.WriteLine("Could not find your Platenumber"); //retunerar den inte nått så hittas de inte
             Thread.Sleep(1500);
             return null;
-        }
-        public static int[] indexesFreeSpace(List<Parkingspots>garage, int GarageSize)
-        {
-
-            int[] indexes = new int[GarageSize];
-            int count=0;
-            foreach (var spot in garage)
-            {
-
-                if (spot.GetVehicles().FirstOrDefault(x => x.Identifier == null) == null) //Where it
-                {
-                    indexes[count] = spot.GetId();
-                }
-                count += 1;
-            }
-
-            return indexes;
         }
 
         public static Parkingspots IsGarageFull(List<Parkingspots> garage, IVehicle vehiceltoadd)
@@ -303,7 +431,7 @@ namespace Prag_Parking2._0
             }
 
         }
-        public static int NumberOfFreeSlots(List<Parkingspots> slots, int carsize)
+        public static int NumberOfFreeSlots(List<Parkingspots> slots, int carsize) //based on carsize
         {
             int counted = 0;
 
@@ -315,7 +443,7 @@ namespace Prag_Parking2._0
             counted /= carsize; //size of car
             return counted;
         }
-        public static List<Parkingspots> LoadFromFile(List<Parkingspots> mygarage)
+        public static List<Parkingspots> LoadFromFile(List<Parkingspots> mygarage) //Denna var också gräslig innan jag kom på hur jag skulle tänka och lägga upp det. Men tillslut så! :D
         {
             List<Parkingspots> parkinggarage = mygarage;
             try
@@ -370,7 +498,7 @@ namespace Prag_Parking2._0
             }
             return mygarage;
         }
-        public static bool WriteToFile(List<Parkingspots> thegarage)
+        public static bool WriteToFile(List<Parkingspots> thegarage) // 
         {
             TextWriter tw = new StreamWriter(Environment.CurrentDirectory + "Garage.txt");
             foreach (var slot in thegarage)
@@ -390,6 +518,16 @@ namespace Prag_Parking2._0
             tw.Close();
             return true;
 
+        }
+        public static void ChangeSetting(string settingname, string newnumber)
+        {
+            Configuration config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
+
+            config.AppSettings.Settings[settingname].Value = newnumber;
+            config.Save(ConfigurationSaveMode.Modified);
+            Console.Clear();
+            Console.WriteLine("Restart the application to apply");
+            return;
         }
     }
 }

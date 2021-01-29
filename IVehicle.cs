@@ -6,7 +6,7 @@ using System.ComponentModel.DataAnnotations;
 namespace Prag_Parking2._0
 {
 
-    public interface IVehicle 
+    public interface IVehicle //Interface för att göra det simplare att lägga olika typer av fordon i listan
     {
         string Identifier { get; set; }
 

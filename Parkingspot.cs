@@ -1,26 +1,31 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+
 
 
 namespace Prag_Parking2._0
-{//Real
-    public class Parkingspots
+{
+    public class Parkingspots //Basen för fordonen på listan. Här hamnar funtioner för att lägga till och ta bort.
     {
+
+
         private List<IVehicle> VehiclesInSpot =
-            new List<IVehicle>();
+            new List<IVehicle>();   // I parkeringsplatsen finns denna lista av fordon som kan stå där. 
+                                    // Varje fordon som läggs till minskar uttrymmet på platsen och vice versa.
+
+
         private int takenSpace { get; set; } = 0 ;
-        private int FreeSpace = 4;
+        private int FreeSpace;
         private int ID = 0;
+        private int size = int.Parse(ConfigurationManager.AppSettings["Parkingsize"]);
 
-
-       
 
         public Parkingspots(int id_in)
         {
             ID = id_in;
+            FreeSpace = size; 
         }
 
         public bool AddVehicleToSpot(IVehicle vehicle)

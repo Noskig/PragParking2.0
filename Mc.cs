@@ -14,7 +14,7 @@ namespace Prag_Parking2._0
             VechicleInTime = DateTime.UtcNow;
         }
 
-        public Mc(string platenumber, string type, string intime) //Re-create mc for load
+        public Mc(string platenumber, string type, string intime) //Re-create mc for loadtofile
         {
             Identifier = platenumber;
             Size = 2;
