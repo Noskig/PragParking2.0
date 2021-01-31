@@ -8,5 +8,7 @@ Lite handpåläggning behövs. Men det är inte värre än att du behöver place
 Applicationen använder sig av [Enviroment.CurrentDirectory]. 
 Mitt tips är att starta programmet en gång. Sen i solution-mappen. -> Bin -> Debug och byt ut netcoreapp3.1Garage. Till den som jag laddar upp här med data. (Vet inte varför den fick namnet netcorappp. Det kom med någon nugget tror jag.) 
 
+Märkte en till grej. Att när programmet skapar garaget från den sparade listan blir det fel storlek på Bilar. För att rätta till det är det bara att ändra Car kunstruktorn #2 till storlek 4 och det blir rätt. Dessa borde vara kopplade till variabeln för CarSize för att kunna ändra configen sen. Ett Mindre problem som jag kan ändra om det behövs.
+
 
 Annars var det allt. Tack och hej
